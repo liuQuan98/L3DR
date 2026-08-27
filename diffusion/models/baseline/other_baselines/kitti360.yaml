@@ -1,0 +1,50 @@
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 8
+    num_workers: 8
+    wrap: true
+    dataset:
+      size:
+      - 64
+      - 1024
+      fov:
+      - 3
+      - -25
+      depth_range:
+      - 1.0
+      - 56.0
+      depth_scale: 56
+      log_scale: false
+      x_range:
+      - -50.0
+      - 50.0
+      y_range:
+      - -50.0
+      - 50.0
+      z_range:
+      - -3.0
+      - 1.0
+      resolution: 1
+      num_channels: 1
+      num_cats: 10
+      num_views: 1
+      num_sem_cats: 19
+      filtered_map_cats: []
+    aug:
+      flip: false
+      rotate: false
+      keypoint_drop: false
+      keypoint_drop_range: null
+      randaug: false
+      camera_drop: 0.5
+    train:
+      target: lidm.data.kitti.KITTI360Train
+      params:
+        condition_key: camera
+        split_per_view: 4
+    validation:
+      target: lidm.data.kitti.KITTI360Validation
+      params:
+        condition_key: camera
+        split_per_view: 4

@@ -1,0 +1,49 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.so
+*.o
+*.obj
+# JIT build dir for the chamfer/emd CUDA extensions
+diffusion/lidm/eval/modules/tmp/
+
+# ---- Model weights: downloaded, never committed ----
+# See diffusion/README.md for the LiDM / eval-toolbox download links.
+*.ckpt
+*.pth
+*.pt
+*.zip
+*.tar
+*.tar.gz
+
+# ---- Datasets: machine-specific symlinks ----
+diffusion/dataset/
+rectification/data/
+
+# ---- Run outputs ----
+diffusion/logs/
+# sampler output - lands beside whatever checkpoint was sampled from,
+# e.g. models/lidm/kitti/sem2lidar/samples/<step>/<ts>_<split>/
+**/samples/
+diffusion/outputs/
+diffusion/image_grad_files/
+rectification/exp/
+rectification/logs/
+wandb/
+lightning_logs/
+events.out.tfevents.*
+*.npz
+# ...but these .npz are source assets, not run output:
+!diffusion/data/config/wod_lidar_params.npz
+!rectification/libs/**/*.npz
+nohup.out
+*.out
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+.DS_Store

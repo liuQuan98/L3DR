@@ -1,0 +1,94 @@
+model:
+  base_learning_rate: 4.5e-6
+  target: lidm.models.autoencoder.VQModel
+  params:
+    monitor: val/rec_loss
+    embed_dim: 8
+    n_embed: 16384
+    lib_name: lidm
+    use_mask: False  # False
+    lossconfig:
+      target: lidm.modules.losses.vqperceptual.VQGeoLPIPSWithDiscriminator
+      params:
+        disc_conditional: false
+        disc_start: 1
+        disc_in_channels: 1
+        disc_num_layers: 3
+        disc_weight: 0.6  # 0.6
+        disc_version: v0  # v1
+        codebook_weight: 1
+        curve_length: 1
+        geo_factor: 0
+        mask_factor: 0  # 0.0
+        perceptual_factor: 0
+        perceptual_type: rangenet_dec
+
+    ddconfig:
+      double_z: false
+      z_channels: 8
+      in_channels: 1
+      out_ch: 1
+      ch: 64
+      ch_mult: [1,2,2,4]  # num_down = len(ch_mult)-1
+      strides: [[1,2],[2,2],[2,2]]  
+      num_res_blocks: 2
+      attn_levels: []
+      dropout: 0.0
+
+
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 8
+    num_workers: 8
+    wrap: true
+    dataset:
+      size: [64, 1024] # [32, 1024], we doubled the number of rows to match original training dynamics
+      fov: [ 10.67, -30.67 ]
+      depth_range: [ 1.0,56.0 ]
+      depth_scale: 56  # np.log2(depth_max + 1)
+      log_scale: false
+      x_range: [ -50.0, 50.0 ]
+      y_range: [ -50.0, 50.0 ]
+      z_range: [ -3.0, 1.0 ]
+      resolution: 1
+      num_channels: 1
+      num_cats: 10
+      num_views: 2
+      num_sem_cats: 16
+      filtered_map_cats: [ ]
+      double_num_lasers_to_64: false
+      double_seg_only: false
+    aug:
+      flip: true
+      rotate: true
+      keypoint_drop: false
+      keypoint_drop_range: [ 5,20 ]
+      randaug: false
+    train:
+      target: lidm.data.nuscenes.NUSCENESTrain
+      params:
+        condition_key: segmentation
+    validation:
+      target: lidm.data.nuscenes.NUSCENESValidation
+      params:
+        condition_key: segmentation
+
+
+
+lightning:
+  callbacks:
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 5000
+        max_images: 8
+        increase_log_steps: false
+
+  trainer:
+    # LiDM author's budget for autoencoders (DESIGN.md: "trained with 40k steps").
+    # Without this PyTorch-Lightning falls back to max_epochs=1000, which is
+    # ~1.2M steps on SemanticKITTI - i.e. it never stops on its own.
+    max_steps: 40000
+    benchmark: true
+    accumulate_grad_batches: 2
